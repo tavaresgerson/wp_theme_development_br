@@ -111,4 +111,111 @@ O tema padrão do WordPress contém um arquivo `functions.php` que define muitos
 ### Arquivos de template
 [Os templates](https://codex.wordpress.org/Stepping_Into_Templates) são arquivos de origem PHP usados para gerar as páginas solicitadas pelos visitantes e são gerados como HTML. Os arquivos de modelo são compostos de HTML, PHP e Tags de template do WordPress.
 
-Vejamos os vários modelos que podem ser definidos como parte de um tema
+Vejamos os vários modelos que podem ser definidos como parte de um tema.
+
+O WordPress permite que você defina templates separados para os vários aspectos do seu site. No entanto, não é essencial ter todos esses arquivos de modelo diferentes para que seu site funcione totalmente. Os templates são escolhidos e gerados com base na hierarquia de modelos, dependendo de quais templates estão disponíveis em um tema específico.
+
+Como desenvolvedor de temas, você pode escolher a quantidade de personalização que deseja implementar usando modelos. Por exemplo, como um caso extremo, você pode usar apenas um arquivo de modelo, chamado `index.php` como modelo para todas as páginas geradas e exibidas pelo site. Um uso mais comum é fazer com que diferentes arquivos de template gerem resultados diferentes, para permitir a máxima personalização.
+
+#### Lista de arquivos de template
+
+Aqui está a lista dos arquivos de tema reconhecidos pelo WordPress. Claro, seu tema pode conter quaisquer outras folhas de estilo, imagens ou arquivos. Apenas lembre-se de que o conteúdo seguinte tem um significado especial para o WordPress - consulte à [hierarquia de templates](https://codex.wordpress.org/Template_Hierarchy) para obter mais informações
+
+`style.css` A folha de estilo principal. Isso **deve** ser incluído no seu tema e deve conter o cabeçalho de informações.
+
+`rtl.css` Isso será incluído automaticamente se a direção do texto do seu site for da direita para a esquerda. Isso pode ser gerado usando o [plugin RTLer](http://wordpress.org/extend/plugins/rtler/).
+
+`index.php` O template principal. Se seu tema fornece seus próprios templates, `index.php deve estar presente.
+
+`comments.php` O template de comentários
+
+`front-page.php` O template da primeira página
+
+`home.php` O template de página inicial, que é a primeira página por padrão. Se você usa uma página inicial estática este é o modelo para a página com as postagens mais recents.
+
+`single.php` O template de postagem única. Usado quando uma única postagem é consultada. Para este e todos os outros templates de consulta, `index.php` é usado se o modelo de consulta não estiver presente.
+
+`single-{post-type}.php` O template de postagem única usada quando uma única postagem de um tipos personalizado é consultada. Por exemplo, `single-book.php` seria usado para exibir postagens únicos do tipo de postagem personalizado chamado "livro". `index.php` é usado se o modelo de consulta para o tipo de postagem personalizado não estiver presente.
+
+`page.php` O template para página. Usado quando uma [página individual](https://codex.wordpress.org/Pages) é consultada
+
+`category.php` O [template de categoria](https://codex.wordpress.org/Category_Templates). Usado quando uma categoria é consultada.
+
+`tag.php` O [template de tags](https://codex.wordpress.org/Tag_Templates). Usado quando uma tag é consultada
+
+`taxonomy.php` o template de taxonomia, usado quando um termo em uma taxonomia personalizada é consultada.
+
+`author.php` o [template de autor](https://codex.wordpress.org/Author_Templates). Usado quando um autor é consultado
+
+`date.php` O template de data/hora. Usado quando uma data ou hora é consultada. Ano, mês, dia, hora, minuto, segundo
+
+`archive.php` O modelo de arquivo. Usado quando uma categoria, autor ou data é consultada. Observe que este modelo será substituído por `category.php` e `date.php` para seus respectivos tipos de consulta.
+
+`search.php` O template de resultados da pesquisa, usado quando uma pesquisa é realizada.
+
+`attachment.php` O template de anexo, usado para visualizar um único anexo
+
+`image.php` O template de anexo de imagem. Usado ao visualizar um único anexo de imagem. Se não estiver presente, attachment.php será usado.
+
+`404.php` O [template 404](https://codex.wordpress.org/Creating_an_Error_404_Page) não encontrado. Usado quando o WordPress não consegue encontrar um post ou página que corresponda à consulta.
+
+Esses arquivos tem um significado especial em relação ao WordPress, pois são usados em substituição ao `index.php`, quando disponível, de acordo com a [Hierarquia de Templates](https://codex.wordpress.org/Template_Hierarchy), e quando a [Tag Condicional](https://codex.wordpress.org/Conditional_Tags) correspondente retornar `true`. Por exemplo, se apenas um único post estiver sendo exibido, a função `is_single()` retornará `true` e, se houver um arquivo `single.php` no tema ativo, esse modelo será usado para gerar a página.
+
+#### Templates básicos
+
+No mínimo, um tema WordPress consiste em dois arquivos:
+
+* style.css
+* index.php
+
+Ambos os arquivos vão para o diretório Theme. O [arquivo de template](https://codex.wordpress.org/Stepping_Into_Templates) `index.php` é muito fléxivel. Ele pode ser usado para incluir todas as referências ao cabeçalho, barra lateral, rodapé, conteúdo, categorias, arquivos, pesquisa, erro e qualquer outra página criada no WordPress.
+
+Ou pode ser dividido em arquivos de templates modulares, cada um assumindo parte da carga de trabalho. Se você não fornecer outros arquivos de template, o WordPress pode ter arquivos ou funções padrão para realizar seus trabalhos. Por exemplo, se você não fornecer um arquivo de modelo `searchform.php`, o WordPress terá uma função padrão para exibir o formulário de pesquisa.
+
+Os arquivos de template típicos incluem:
+
+* `comments.php`
+* `comments-popup.php`
+* `footer.php`
+* `header.php`
+* `sidebar.php`
+
+Usando esses arquivos de template, você pode colocar tags de temmplate no arquivo mestre `index.php` para incluir esses outros arquivos onde você deseja que eles apareçam na página final gerada.
+
+* Para incluir o cabeçalho, use `get_header()`
+* Para incluir a barra lateral, use `get_sidebar()`
+* Para incluir o rodapé, use `get_footer()`
+* Para incluir o formulário de pesquisa, use `get_search_form()`
+
+Aqui está um exemplo do uso de `include`:
+
+```php
+<?php get_sidebar() ?>
+<?php get_footer() ?>
+```
+
+Os arquivos padrão para algumas funções de template podem estar obsoletos ou não estão presentes, e você deve fornecer esses arquivos em seu tema. A partir da versão 3.0, os arquivos padrão obsoletos estão localizados em `wp-includes/theme-compat`. Por exemplo, você deve fornecer `header.php` para que a função `get_header()` funcione com segurança e `comments.php` para a função `comments_template()`.
+
+Para saber mais sobre como esses vários templates funcionam e como gerar informações diferentes dentro deles, leia a documentação dos [templates](https://codex.wordpress.org/Templates).
+
+#### Templates de páginas personalizados
+
+Os arquivos que definem cada template de página são encontrados em seu diretório de [temas](https://codex.wordpress.org/Using_Themes). Para criar um novo template de página personalizado para uma página, você deve criar um arquivo. Vamos chamar nosso template de primeira página para nossa página `snarfer.php`. No topo do arquivo `snarfer.php`, coloque o seguinte:
+
+```php
+<?php
+/*
+Template Name: Snarfer
+*/
+?>
+```
+
+O código acima define este arquivo `snarfer.php` como o template "Snarfer". Naturalmente, "Snarfer" pode ser substituído por qualquer texto para alterar o nome do template de página. Este nome de template aparecerá no Editor de Temas como também o link para editar este arquivo.
+
+O arquivo pode ser nomeado quase com qualquer coisas mas, com a extensão `.php` (veja nomes de arquivos de temas reservados. Estes nomes são usados para propósitos específicos no WordPress).
+
+O que segue as cinco linhas de código acima é com você. O restante do código que você escrever controlará como as páginas que usam o template de página Snarfer serão exibidas. Consulte [Tags de template] para obter uma descrição das várias funções de template do WordPress que você pode usar para essa finalidade. Você pode achar mais conveniente copiar algum outro modelo (talvez, `page.php` ou `index.php`) para `snarfer.php` e então adicionar as cinco linhas de código acima no início do arquivo. Dessa forma, você só terá que alterar o código HTML e PHP em vez de criar tudo do zero. Exemplos são mostrados abaixo. Depois de criar um template de página e colocá-lo no diretório do seu tema, ele estará disponível como opção ao criar ou editar uma página (Nota: ao criar ou editar uma página, a oção Template de página não aparece a menos que haja pelo menos um template definido da maneira citada anteriormente).
+
+#### Arquivos de template baseados em consulta
+
+O WordPress pode carregar diferentes [templates](https://codex.wordpress.org/Stepping_Into_Templates) para diferentes tipos de consulta. Há duas maneiras de fazer isso: como parte da [hierarquia de templates](https://codex.wordpress.org/Template_Hierarchy) integrada e por meio do uso de [tags condicionais](https://codex.wordpress.org/Conditional_Tags) dentro do [loop](https://codex.wordpress.org/The_Loop) de um arquivo de template.
