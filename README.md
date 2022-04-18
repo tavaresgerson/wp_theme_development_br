@@ -337,4 +337,46 @@ Ao desenvolver um tema, verifique seus arquivos de template em relação aos seg
 - O elemento charset `<meta>` deve ser colocado antes de tudo, incluindo o elemento `<title>`
 - Use [`bloginfo()`](https://codex.wordpress.org/Function_Reference/bloginfo) para definir o conjunto de caracteres `<meta>` e os elementos de descrição
 - Use [`wp_title()`](https://codex.wordpress.org/Function_Reference/wp_title) para definir o elemento `<title>`. [Veja o porquê](https://codex.wordpress.org/Function_Reference/wp_title#Note)
+- Use links de [feed automáticos](https://codex.wordpress.org/Automatic_Feed_Links) para adicionar links de feed
+- Adicione uma chamada para [wp_head()](https://codex.wordpress.org/Function_Reference/wp_head) antes da tag de fechamento `</head>`. Os plugins usam esse [gancho de ação](https://codex.wordpress.org/Plugin_API/Action_Reference) para adicionar seus próprios scripts, folhas de estilo e outras funcionalidades.
+- Não vincule as folhas de estilo do tema no modelo de cabeçalho. Em vez disso, use o gancho de ação [`wp_enqueue_scripts` em uma função de tema](https://codex.wordpress.org/Plugin_API/Action_Reference/wp_enqueue_scripts)
 
+Aqui está um exemplo de uma área de cabeçalho compatível com HTML5 formatada corretamente:
+
+```php
+<!DOCTYPEhtml>
+<html <?php language_attributes(); ?>>
+    <cabeça>
+        <meta charset="<?php bloginfo( 'charset' ); ?>" />
+        <title><?php wp_title(); ?></título>
+        <link rel="profile" href="http://gmpg.org/xfn/11" />
+        <link rel="pingback" href="<?php bloginfo( 'pingback_url' ); ?>" />
+        <?php if ( is_singular() && get_option( 'thread_comments' ) ) wp_enqueue_script( 'comment-reply' ); ?>
+        <?php wp_head(); ?>
+    </head>
+```
+
+#### Menus de navegação (header.php)
+
+- Navegação principal do Tema deve suportar um menu personalizado com [`wp_nav_menu()`](https://codex.wordpress.org/Function_Reference/wp_nav_menu)
+  - Os menus devem suportar títulos de links longos e uma grande quantidade de itens de lista. Esses itens não devem quebrar o design ou o layout.
+  - Os itens do submenu devem ser exibidos corretamente. Se possível, suporte estilos de menu suspenso para itens de submenu. Listas suspensas que permite mostrar a profundidade do menu em vez de apenas mostrar o nível superior.
+
+#### Widgets (sidebar.php)
+- O tema deve ser widgetizado o máximo possível. Qualquer área do layout que funcione como um widget (tag cloud, blogroll, lista de categorias) ou possa aceitar à barra lateral deve permitir widgets.
+- O conteúdo que aparece em áreas com widgets por padrão (codificado na barra lateral, por exemplo) deve desaparecer quando os widgets são ativados em "Aparência > Widgets".
+
+#### Rodapé (footer.php)
+
+- Use a chamada [`wp_footer()`](https://codex.wordpress.org/Function_Reference/wp_footer), para aparecer logo antes de fechar a tag `body`.
+
+```php
+<?php wp_footer(); ?>
+</body>
+</html>
+```
+
+#### Índice (index.php)
+
+- Exiba uma lista de postagens em formato de trecho ou completo. Escolha um ou outro conforme apropriado.
+- Inclua [`wp_link_pages()`](https://codex.wordpress.org/Function_Reference/wp_link_pages) para oferecer suporte a links de navegação nas postagens.
