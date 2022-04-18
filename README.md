@@ -219,3 +219,122 @@ O que segue as cinco linhas de código acima é com você. O restante do código
 #### Arquivos de template baseados em consulta
 
 O WordPress pode carregar diferentes [templates](https://codex.wordpress.org/Stepping_Into_Templates) para diferentes tipos de consulta. Há duas maneiras de fazer isso: como parte da [hierarquia de templates](https://codex.wordpress.org/Template_Hierarchy) integrada e por meio do uso de [tags condicionais](https://codex.wordpress.org/Conditional_Tags) dentro do [loop](https://codex.wordpress.org/The_Loop) de um arquivo de template.
+
+Para usar a Hierarquia de Templates, você basicamente precisa fornecer arquivos Template com propósitos especiais, que serão usados automaticamente para substituir o `index.php`. Por exemplo, se o seu tema fornece um modelo chamado `category.php`e uma categoria está sendo consultada, `category.php` será carregado em vez de `index.php`. Se `category.php` não estiver presente, `index.php` é usado normalmente.
+
+Você pode ser ainda mais específico na hierarquia de modelos fornecendo um arquivo chamado, por exemplo, `category-6.php` -- este arquivo será usado em vez de `category.php` ao gerar a página para a categoria cujo número de ID é 6. (Você pod encontar números de ID de categoria em [Gerenciar](https://codex.wordpress.org/Administration_Panels#Manage_-_Change_your_content) > [Categorias](https://codex.wordpress.org/Administration_Panels#Categories) se estiver conectado como administrador do site no WordPress versão 2.3 e inferior. No WordPress 2.5, a coluna ID foi removida dos painéis de administração. Você pode localizar o ID da categoria clicando em "Editar categoria" e procurando na barra de ednereços do URL pelo valor cat_ID. Ele irá ver '...categories.php?action=edit&cat_ID=3' onde '3' é o id da categoria). Para uma visão mais detalhada de como esse processo funciona, consulte [Templates de Categoria](https://codex.wordpress.org/Category_Templates).
+
+Se o seu tema precisa ter ainda mais controle sobre quais arquivos de template são usados do que o fornecido na [Hierarquia de templates](https://codex.wordpress.org/Template_Hierarchy), você pod usar [tags condicionais](https://codex.wordpress.org/Conditional_Tags). A Tag Condicional basicamente verifica se alguma condição específica é verdadeira, dentro do [Loop do WordPress](https://codex.wordpress.org/The_Loop_in_Action) e então você pode carregar um template específico ou colocar algum texto específico na tela com base nessa condição.
+
+Por exemplo, para gerar uma folha de estilo distinta em uma postagem eonctrada apenas em uma categoria específica, o código pode ficar assim:
+
+```php
+<?php
+if ( is_category( '9' ) ) {
+    get_template_part('single2'); // procurando posts na categoria com ID '9'
+} senão {
+    get_template_part('single1'); // coloque isso em todos os outros posts de categoria
+}
+?>
+```
+
+Ou usando uma consulta, pode ser assim:
+```php
+<?php
+$post = $wp_query->post;
+if ( in_category( '9' ) ) {
+    get_template_part('single2');
+} senão {
+    get_template_part('single1');
+}
+?>
+```
+
+Em ambos os casos, este código de exemplo fará com que diferentes templates sejam usados dependendo da categoria da postagem específica que está sendo exibida. As condições de consulta não estão limitadas a categorias, no entanto, consulte o artigo [Tags condicionais](https://codex.wordpress.org/Conditional_Tags) para ver todas as opções.
+
+#### Definindo templates personalizados
+É possível usar o sistema de plugins do WordPress para definir modelos adicionais que são mostrados com base em seus próprios critérios personalizados. [Esse recurso avançado pode ser realizado usando o gancho de ação](https://codex.wordpress.org/Plugin_API#Current_Hooks_For_Actions) 'template_include'. Mais informações sobre criação de plug-ins podem ser encontradas na referência da [API do plug-in](https://codex.wordpress.org/Plugin_API).
+
+#### Incluindo arquivos de template
+
+Para carregar outro template (além de header, sidebar, footer, que tem comandos incluídos predefinidos como `get_header()` em um template, você pode usar `get_template_part()`. Isso torna mais fácil para um tema reutilizar seções de código.
+
+Exemplo: suponha que você tenha um template no diretório 'template-parts' chamado `blog-content.php` no diretório raiz do seu tema. Para chamar este modelo, use este código.
+
+```php
+<?php get_template_part('template-parts/blog', 'conteúdo'); ?>
+```
+
+Exemplo 2: Suponha que você tenha vários tipos de postagem, como postagem, livro, página. você pode criar modelos no diretório raiz do seu tema como `content-post.php`, `content-book.php`, `content-page.php` Agora, chame esses modelos facilmente sob o loop como:
+
+```php 
+<?php get_template_part('content', get_post_type()); ?>
+```
+
+#### Referenciando arquivos de um template
+
+Ao fazer referência a outros arquivos dentro do mesmo tema, evite URIs codificados e caminhos de arquivo. Em vez disso, faça referência aos URIs e caminhos de arquivo com `bloginfo()`: consulte Referenciando arquivos de um template nesta seção.
+
+Observe que os URIs usados na folha de estilo são relativos à folha de estilo, não à página que faz referência à folha de estilo. Por exemplo, se você incluir um diretório `images/` em seu tema, você só precisa específicar esse diretório relativo no CSS, assim:
+
+```css
+h1 {
+    imagem de fundo: url(imagens/meu-fundo.jpg);
+}
+```
+
+#### Ganchos de API do plug-in
+
+Ao desenvolver temas, é bom ter em mente que seu tema deve ser configurado para que possa funcionar bem com qualquer plugin do WordPress que os usuários decidam instalar. Os plug-ins adicionam funcionalidade ao WordPress por meio de "Ganchos de ação" (consulte [API do plug-in](https://codex.wordpress.org/Plugin_API) para obter mais informações).
+
+A maioria dos Ganchos de Ação (Action Hooks) está dentro do código PHP principal do WordPress, então seu tema não precisa ter nenhuma tag especial para funcionar. Mas, alguns ganchos de ação precisam estar presentes em seu tema, para que os plug-ins exibam informações diretamente em seu cabeçalho, rodapé, barra lateral ou no corpo da página. Aqui está uma lista das tags de ganchos para templates com ações especiais que você precisa incluir:
+
+- [`wp_enqueue_scripts`](https://codex.wordpress.org/Plugin_API/Action_Reference/wp_enqueue_scripts): Usado no arquivo de funções do tema. Usado para carregar scripts externos e folhas de estilo.
+- [`wp_head()`](https://codex.wordpress.org/Function_Reference/wp_head): Usado dentro da tag `<head></head>` de um tema, em `header.php`. Exemplo de uso do plugin: adicionar código Javascript.
+- [`wp_footer()`](https://codex.wordpress.org/Function_Reference/wp_footer): Usado no `footer.php`, logo antes da tag de fechamento `<body>`. Exemplo de uso de plugin: insira um código PHP que precisa ser executado após todo o resto, na parte inferior do rodapé. Muito comumente usado para inserir código de estatísticas da web como o Google Analytics, por exemplo.
+- [`wp_meta()`](https://codex.wordpress.org/Function_Reference/wp_meta): Normalmente vai na seção `<li>Meta</li>` do menu ou barra lateral de um tema: `sidebar.php`. Exemplo de uso de plugin: inclua um anúncio rotativo ou uma nuvem de tags.
+- [`comment_form()`](https://codex.wordpress.org/Function_Reference/comment_form): Usado em `comments.php` diretamente antes da tag de fechamento do arquivo `</div>`. Exxemplo de uso de plugin: exibir uma visualização de comentário.
+
+Para um exemplo de uso no mundo real, você encontrará esses ganchos de plugin incluídos nos modelos padrão do tema.
+
+#### API de personalização de temas
+
+A partir do WordPress 3.4, um novo recurso de personalização de temas está disponível por padrão para quase todos os temas do WordPress. A página de administração de personalização do tema é preenchida automaticamente com opções para as quais um tema declara suporte com `add_theme_support()` ou usando a API de configurações e permite que os administradores vejam visualizações não permanentes das alterações feitas em tempo-real.
+
+Desenvolvedores de temas e plugins interessados em adicionar novas opções à página de personalização de temas de um tema devem consultar a documentação na [API de personalização]() de temas. Tutoriais adicionais sobre a API de personalização de temas estão disponíveis no site [Ottopress.com](http://ottopress.com/2012/how-to-leverage-the-theme-customizer-in-your-own-themes/).
+
+#### Dados não confiáveis
+
+Você deve escapar do conteúdo gerado dinamicamente em seu tema, especialmente o conteúdo que é enviado para atributos HTML. COnforme observado em [Padrões de codificação do WordPress](http://make.wordpress.org/core/handbook/coding-standards/), o texto que entra nos atributos deve ser executado por meio de [`esc_attr()`](https://codex.wordpress.org/Function_Reference/esc_attr) para que aspas simples ou duplas não terminem o valor do atributo e invalidem o XHTML e causem um problema de segurança. Lugares comuns para verificar são os atributos `title`, `alt` e `value`.
+
+Existem algumas tags de modo especiais para casos comuns em que a saída segura é necessária. Um desses casos envolve a saída de um título de postagem para um atributo `title` usando [`the_title_attribute()`](https://codex.wordpress.org/Function_Reference/the_title_attribute) em vez de [`the_title()`](https://codex.wordpress.org/Function_Reference/the_title) para evitar uma vulnerabilidade de segurança. Aqui está um exemplo de escape correto para o atributo `title` de um link de postagem ao usar texto traduzível.
+
+```php
+<a href="<?php the_permalink(); ?>" title="<?php sprintf( __( 'Link permanente para %s', 'theme-name' ), the_title_attribute( 'echo=0' ) ); ?>"><?php the_title(); ?></a>
+```
+
+Substitua as chamadas de escape obsoletas pelas chamadas corretas: [`wp_specialchars()`](https://codex.wordpress.org/Function_Reference/wp_specialchars) e [`htmlspecialchars`](http://php.net/manual/en/function.htmlspecialchars.php) por [`esc_html`](https://codex.wordpress.org/Function_Reference/esc_html), [`clean_url`](https://codex.wordpress.org/Function_Reference/clean_url) por [`esc_url`](https://codex.wordpress.org/Function_Reference/esc_url) e [`attribute_escape`](https://codex.wordpress.org/Function_Reference/attribute_escape) por [`esc_attr`](https://codex.wordpress.org/Function_Reference/esc_attr). Consulte [Data_Validation](https://codex.wordpress.org/Data_Validation#Attribute_Nodes) para obter mais informações.
+
+#### Suporte de tradução/I18n
+
+[Para garantir uma transição suave para a localização do idioma, use as funções i18n](https://codex.wordpress.org/I18n_for_WordPress_Developers) baseadas em gettext do WordPress para agrupar todo o texto traduzível nos arquivos de modo. Isso torna mais fácil para os arquivos de tradução conectarem e traduzirem os rótulos, títulos e outos textos de modelo para o idioma atual do site. Veja mais em [WordPress Localization](https://codex.wordpress.org/WordPress_Localization) e [I18n for WordPress Developers](https://codex.wordpress.org/I18n_for_WordPress_Developers).
+
+#### Classes temáticas
+
+Implemente as seguintes tags de template para adicionar atributos de classe gerados pelo WordPress aos elementos body, post e comment. Para classes de postaagem, aplique apenas a elementos dentro do [The Loop](https://codex.wordpress.org/The_Loop).
+
+- [`body_class()`](https://codex.wordpress.org/Function_Reference/body_class)
+- [`post_class()`](https://codex.wordpress.org/Function_Reference/post_class)
+- [`comment_class()`](https://codex.wordpress.org/Function_Reference/comment_class)
+
+### Lista de verificação de arquivo de template
+
+Ao desenvolver um tema, verifique seus arquivos de template em relação aos seguintes padrões de arquivo de template.
+
+#### Cabeçalho do documento (header.php)
+- [Use o DOCTYPE](http://en.wikipedia.org/wiki/Document_Type_Declaration) adequado
+- A tag de abertura `<html>` deve incluir [`language_attributes()`](https://codex.wordpress.org/Function_Reference/language_attributes)
+- O elemento charset `<meta>` deve ser colocado antes de tudo, incluindo o elemento `<title>`
+- Use [`bloginfo()`](https://codex.wordpress.org/Function_Reference/bloginfo) para definir o conjunto de caracteres `<meta>` e os elementos de descrição
+- Use [`wp_title()`](https://codex.wordpress.org/Function_Reference/wp_title) para definir o elemento `<title>`. [Veja o porquê](https://codex.wordpress.org/Function_Reference/wp_title#Note)
+
